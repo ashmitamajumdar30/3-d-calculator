@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Simple Calculator</title>
+    <style>
+        body {
+            background-color: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* --- 3D Calculator Body --- */
+        .calculator {
+            background-color: #ecf0f1;
+            padding: 25px;
+            border-radius: 15px;
+            width: 320px;
+            
+            /* 3D Tilt and Shadow */
+            transform: perspective(800px) rotateX(15deg);
+            transform-style: preserve-3d;
+            box-shadow: 
+                0 20px 30px rgba(0,0,0,0.5), 
+                0 10px 0 #bdc3c7, /* The thick 3D edge of the calculator */
+                inset 0 2px 0 white;
+            transition: transform 0.3s ease;
+        }
+
+        .calculator:hover {
+            transform: perspective(800px) rotateX(10deg); /* Lifts up slightly on hover */
+        }
+
+        /* --- Calculator Screen --- */
+        .screen {
+            background-color: #34495e;
+            color: #2ecc71;
+            font-size: 40px;
+            text-align: right;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: inset 0 5px 10px rgba(0,0,0,0.5); /* Inner 3D shadow */
+            overflow-x: auto;
+            border: 2px solid #2c3e50;
+            text-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+        }
+
+        /* --- Calculator Buttons --- */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        button {
+            background-color: #ffffff;
+            border: none;
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 15px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            
+            /* 3D Button Effect */
+            box-shadow: 0 6px 0 #bdc3c7, 0 8px 5px rgba(0,0,0,0.2);
+            transition: all 0.1s;
+        }
+
+        /* The physical "press down" animation when clicked */
+        button:active {
+            transform: translateY(6px); /* Moves down */
+            box-shadow: 0 0 0 #bdc3c7, 0 2px 3px rgba(0,0,0,0.2); /* Removes bottom edge */
+        }
+
+        /* Colored Buttons */
+        .operator { background-color: #3498db; color: white; box-shadow: 0 6px 0 #2980b9, 0 8px 5px rgba(0,0,0,0.2); }
+        .operator:active { box-shadow: 0 0 0 #2980b9; }
+
+        .equal { background-color: #e74c3c; color: white; box-shadow: 0 6px 0 #c0392b, 0 8px 5px rgba(0,0,0,0.2); grid-column: span 2; }
+        .equal:active { box-shadow: 0 0 0 #c0392b; }
+
+        .clear { background-color: #e67e22; color: white; box-shadow: 0 6px 0 #d35400, 0 8px 5px rgba(0,0,0,0.2); grid-column: span 2; }
+        .clear:active { box-shadow: 0 0 0 #d35400; }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <div class="screen" id="display">0</div>
+    <div class="keypad">
+        <button class="clear" onclick="clearDisplay()">C</button>
+        <button class="operator" onclick="appendCharacter('/')">÷</button>
+        <button class="operator" onclick="appendCharacter('*')">×</button>
+        
+        <button onclick="appendCharacter('7')">7</button>
+        <button onclick="appendCharacter('8')">8</button>
+        <button onclick="appendCharacter('9')">9</button>
+        <button class="operator" onclick="appendCharacter('-')">−</button>
+        
+        <button onclick="appendCharacter('4')">4</button>
+        <button onclick="appendCharacter('5')">5</button>
+        <button onclick="appendCharacter('6')">6</button>
+        <button class="operator" onclick="appendCharacter('+')">+</button>
+        
+        <button onclick="appendCharacter('1')">1</button>
+        <button onclick="appendCharacter('2')">2</button>
+        <button onclick="appendCharacter('3')">3</button>
+        
+        <!-- The equal button takes up two spaces on the bottom right -->
+        <button onclick="appendCharacter('0')">0</button>
+        <button onclick="appendCharacter('.')">.</button>
+        <button class="equal" onclick="calculateResult()">=</button>
+    </div>
+</div>
+
+<script>
+    // 1. Grab the screen element so we can update it
+    const display = document.getElementById('display');
+
+    // 2. Add numbers and operators to the screen
+    function appendCharacter(char) {
+        // If screen just says 0, replace it (unless they typed a decimal)
+        if (display.innerText === '0' && char !== '.') {
+            display.innerText = char;
+        } else {
+            display.innerText += char;
+        }
+    }
+
+    // 3. Clear everything back to 0
+    function clearDisplay() {
+        display.innerText = '0';
+    }
+
+    // 4. Do the math!
+    function calculateResult() {
+        try {
+            // eval() takes a math string like "2+2" and calculates it
+            let result = eval(display.innerText);
+            
+            // Fix long decimals (e.g., 0.1 + 0.2 won't look weird)
+            if (!Number.isInteger(result)) {
+                result = result.toFixed(4); // limit to 4 decimal places
+                result = parseFloat(result); // remove trailing zeros
+            }
+            
+            display.innerText = result;
+        } catch (error) {
+            // If they type something invalid like "5++5"
+            display.innerText = 'Error';
+            setTimeout(clearDisplay, 1500); // Clear error after 1.5 seconds
+        }
+    }
+</script>
+
+</body>
+</html>
